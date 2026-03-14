@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { MoonStarIcon, SunIcon } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { BudgetCard, type Currency, type ExpenseItem } from "@/components/home/budget-card";
 import { PlannerResult } from "@/components/home/planner-result";
+import { SharePlanner } from "@/components/home/share-planner";
 import { Button } from "@/components/ui/button";
+
+const SHARE_PARAM = "plan";
 
 function createExpenseItem(index: number): ExpenseItem {
   return {
@@ -15,10 +17,44 @@ function createExpenseItem(index: number): ExpenseItem {
   };
 }
 
+function getExpensesFromShareQuery(): ExpenseItem[] | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rawValue = new URLSearchParams(window.location.search).get(SHARE_PARAM);
+  if (!rawValue) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(decodeURIComponent(rawValue)) as Array<{
+      category: ExpenseItem["category"];
+      value: string;
+      currency: Currency;
+    }>;
+
+    if (!Array.isArray(parsed) || parsed.length === 0) {
+      return null;
+    }
+
+    return parsed.map((item, index) => ({
+      id: `${Date.now()}-${index}`,
+      category: item.category,
+      value: item.value,
+      currency: item.currency,
+    }));
+  } catch {
+    return null;
+  }
+}
+
 export default function HomePage() {
-  const [expenses, setExpenses] = useState<ExpenseItem[]>([createExpenseItem(0)]);
+  const plannerRef = useRef<HTMLElement | null>(null);
+  const [expenses, setExpenses] = useState<ExpenseItem[]>(
+    () => getExpensesFromShareQuery() ?? [createExpenseItem(0)],
+  );
   const [showResult, setShowResult] = useState(false);
-  const [isDark, setIsDark] = useState(true);
 
   const totalsByCurrency = useMemo(() => {
     const totals = new Map<Currency, number>();
@@ -67,31 +103,55 @@ export default function HomePage() {
     });
   }
 
-  function toggleTheme() {
-    const nextIsDark = !isDark;
-    document.documentElement.classList.toggle("dark", nextIsDark);
-    setIsDark(nextIsDark);
+  function handleEnterNavigation(event: React.KeyboardEvent<HTMLElement>) {
+    if (
+      event.key !== "Enter" ||
+      event.shiftKey ||
+      event.ctrlKey ||
+      event.altKey ||
+      event.metaKey
+    ) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    const isInput = target.tagName === "INPUT";
+    const isComboboxTrigger = target.getAttribute("role") === "combobox";
+
+    if (!isInput && !isComboboxTrigger) {
+      return;
+    }
+
+    if (target.getAttribute("aria-expanded") === "true") {
+      return;
+    }
+
+    const root = plannerRef.current;
+    if (!root) {
+      return;
+    }
+
+    const orderedFields = Array.from(
+      root.querySelectorAll<HTMLElement>("[data-enter-nav='true']:not([disabled])"),
+    );
+    const index = orderedFields.indexOf(target);
+    if (index === -1) {
+      return;
+    }
+
+    event.preventDefault();
+    const next = orderedFields[index + 1] ?? orderedFields[0];
+    next.focus();
   }
 
   return (
-    <main className="flex min-h-screen w-full flex-col gap-6 pb-10">
-      <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/92 px-4 py-4 backdrop-blur-sm sm:px-6">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <p className="text-xs tracking-[0.14em] text-muted-foreground uppercase">Travel Planner</p>
-            <h1 className="text-xl leading-tight font-semibold text-foreground sm:text-2xl [font-family:var(--font-display)]">
-              Home budget board
-            </h1>
-          </div>
-          <Button variant="outline" onClick={toggleTheme}>
-            {isDark ? <SunIcon data-icon="inline-start" /> : <MoonStarIcon data-icon="inline-start" />}
-            {isDark ? "Light mode" : "Dark mode"}
-          </Button>
-        </div>
-      </header>
-
+    <main
+      ref={plannerRef}
+      className="flex min-h-screen w-full flex-col gap-6 pb-10 pt-2"
+      onKeyDownCapture={handleEnterNavigation}
+    >
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 sm:px-6">
-        <section className="pt-2">
+        <section>
           <BudgetCard
             expenses={expenses}
             onUpdateExpense={updateExpense}
@@ -101,9 +161,17 @@ export default function HomePage() {
         </section>
 
         <section className="flex flex-col gap-4">
-          <Button size="lg" className="w-full sm:w-auto" onClick={() => setShowResult(true)}>
-            Finish planner and calculate
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <SharePlanner expenses={expenses} />
+            <Button
+              size="lg"
+              className="w-full sm:w-auto"
+              data-enter-nav="true"
+              onClick={() => setShowResult(true)}
+            >
+              Finish planner and calculate
+            </Button>
+          </div>
 
           {showResult ? (
             <PlannerResult totalItems={totalItems} totalsByCurrency={totalsByCurrency} />

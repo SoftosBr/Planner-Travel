@@ -76,7 +76,11 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                   value={item.category}
                   onValueChange={(value) => onUpdateExpense(item.id, { category: value as ExpenseCategory })}
                 >
-                  <SelectTrigger id={`category-${item.id}`} className="w-full">
+                  <SelectTrigger
+                    id={`category-${item.id}`}
+                    className="w-full"
+                    data-enter-nav="true"
+                  >
                     <SelectValue placeholder="Choose category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -101,6 +105,7 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                   step="0.01"
                   inputMode="decimal"
                   className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  data-enter-nav="true"
                   placeholder="0.00"
                   value={item.value}
                   onChange={(event) => onUpdateExpense(item.id, { value: event.target.value })}
@@ -113,7 +118,11 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                   value={item.currency}
                   onValueChange={(value) => onUpdateExpense(item.id, { currency: value as Currency })}
                 >
-                  <SelectTrigger id={`currency-${item.id}`} className="w-full">
+                  <SelectTrigger
+                    id={`currency-${item.id}`}
+                    className="w-full"
+                    data-enter-nav="true"
+                  >
                     <SelectValue placeholder="Choose currency" />
                   </SelectTrigger>
                   <SelectContent>
@@ -133,22 +142,22 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                 {isLastLine ? (
                   <Button
                     aria-label="Add line below"
-                    className="w-full md:w-auto"
+                    className="w-full md:w-full"
+                    data-enter-nav="true"
                     onClick={() => onAddBelow(item.id)}
                   >
                     <PlusIcon data-icon="inline-start" />
-                    Add
                   </Button>
                 ) : (
                   <Button
                     aria-label="Remove line"
                     variant="outline"
-                    className="w-full md:w-auto"
+                    className="w-full md:w-full"
+                    data-enter-nav="true"
                     disabled={!canRemove}
                     onClick={() => onRemove(item.id)}
                   >
                     <Trash2Icon data-icon="inline-start" />
-                    Remove
                   </Button>
                 )}
               </div>
