@@ -1,10 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { BudgetCard, type Currency, type ExpenseItem } from "@/components/home/budget-card";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { BudgetCard, type ExpenseItem } from "@/components/home/budget-card";
 import { PlannerResult } from "@/components/home/planner-result";
 import { SharePlanner } from "@/components/home/share-planner";
 import { Button } from "@/components/ui/button";
+import { parseAmountInput } from "@/lib/amounts";
+import type { Currency } from "@/lib/currencies";
+import { refreshExchangeRatesInBackground } from "@/lib/exchange-rates";
 
 const SHARE_PARAM = "plan";
 
@@ -54,13 +57,17 @@ export default function HomePage() {
   const [expenses, setExpenses] = useState<ExpenseItem[]>(
     () => getExpensesFromShareQuery() ?? [createExpenseItem(0)],
   );
-  const [showResult, setShowResult] = useState(false);
+  const [isResultOpen, setIsResultOpen] = useState(false);
+
+  useEffect(() => {
+    void refreshExchangeRatesInBackground();
+  }, []);
 
   const totalsByCurrency = useMemo(() => {
     const totals = new Map<Currency, number>();
 
     for (const item of expenses) {
-      const parsed = Number.parseFloat(item.value);
+      const parsed = parseAmountInput(item.value);
       if (!Number.isFinite(parsed) || parsed <= 0) {
         continue;
       }
@@ -71,7 +78,7 @@ export default function HomePage() {
   }, [expenses]);
 
   const totalItems = useMemo(
-    () => expenses.filter((item) => Number.parseFloat(item.value) > 0).length,
+    () => expenses.filter((item) => parseAmountInput(item.value) > 0).length,
     [expenses],
   );
 
@@ -167,15 +174,18 @@ export default function HomePage() {
               size="lg"
               className="w-full sm:w-auto"
               data-enter-nav="true"
-              onClick={() => setShowResult(true)}
+              onClick={() => setIsResultOpen(true)}
             >
               Finish planner and calculate
             </Button>
           </div>
 
-          {showResult ? (
-            <PlannerResult totalItems={totalItems} totalsByCurrency={totalsByCurrency} />
-          ) : null}
+          <PlannerResult
+            open={isResultOpen}
+            onOpenChange={setIsResultOpen}
+            totalItems={totalItems}
+            totalsByCurrency={totalsByCurrency}
+          />
         </section>
       </div>
     </main>

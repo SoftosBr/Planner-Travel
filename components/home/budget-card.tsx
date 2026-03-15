@@ -14,9 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatAmountInput } from "@/lib/amounts";
+import { currencyOptions, type Currency } from "@/lib/currencies";
 
 export type ExpenseCategory = "visa" | "plane-ticket" | "accommodation" | "others";
-export type Currency = "EUR" | "BRL" | "USD" | "JPY" | "KRW";
 
 export type ExpenseItem = {
   id: string;
@@ -37,14 +38,6 @@ const categoryOptions: { value: ExpenseCategory; label: string }[] = [
   { value: "plane-ticket", label: "Plane ticket" },
   { value: "accommodation", label: "Accommodation" },
   { value: "others", label: "Others" },
-];
-
-const currencyOptions: { value: Currency; label: string }[] = [
-  { value: "EUR", label: "EUR - Euro" },
-  { value: "BRL", label: "BRL - Brazilian Real" },
-  { value: "USD", label: "USD - American Dollar" },
-  { value: "JPY", label: "JPY - Japanese Yen" },
-  { value: "KRW", label: "KRW - Korean Won" },
 ];
 
 export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: BudgetCardProps) {
@@ -100,15 +93,14 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                 <Label htmlFor={`value-${item.id}`}>Budgeted value</Label>
                 <Input
                   id={`value-${item.id}`}
-                  type="number"
-                  min="0"
-                  step="0.01"
+                  type="text"
                   inputMode="decimal"
-                  className="[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   data-enter-nav="true"
                   placeholder="0.00"
                   value={item.value}
-                  onChange={(event) => onUpdateExpense(item.id, { value: event.target.value })}
+                  onChange={(event) =>
+                    onUpdateExpense(item.id, { value: formatAmountInput(event.target.value) })
+                  }
                 />
               </div>
 

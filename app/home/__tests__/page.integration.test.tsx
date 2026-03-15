@@ -1,10 +1,30 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import HomePage from "@/app/home/page";
 
 describe("HomePage integration", () => {
-  it("adds a new expense line and calculates planner totals", async () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("adds a new expense line and calculates planner totals in the modal", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      json: async () => ({
+        amount: 1,
+        base: "USD",
+        date: "2026-03-13",
+        rates: {
+          BRL: 5,
+          EUR: 0.5,
+          JPY: 100,
+          KRW: 1000,
+        },
+      }),
+      ok: true,
+      status: 200,
+    } as Response);
+
     const user = userEvent.setup();
 
     render(<HomePage />);
@@ -24,17 +44,28 @@ describe("HomePage integration", () => {
 
     await user.type(valueInputs[0], "10");
     await user.type(valueInputs[1], "20");
+    expect(valueInputs[0]).toHaveDisplayValue("10");
+    expect(valueInputs[1]).toHaveDisplayValue("20");
 
     await user.click(screen.getByRole("button", { name: /finish planner and calculate/i }));
 
-    expect(screen.getByText(/2 expense item\(s\) included/i)).toBeInTheDocument();
-    const resultTitle = screen.getByText(/planner result/i);
-    const resultCard = resultTitle.closest("div[data-slot='card']") ?? resultTitle.parentElement;
-    if (!resultCard) {
-      throw new Error("Result card container not found");
-    }
+    const dialog = await screen.findByRole("dialog");
+    expect(within(dialog).getByText(/2 expense item\(s\) included/i)).toBeInTheDocument();
+    expect(within(dialog).getByDisplayValue("USD 30.00")).toBeInTheDocument();
+    const totalRows = within(dialog).getAllByText("30.00");
+    expect(totalRows).toHaveLength(1);
+    expect(
+      within(dialog).getByText("Exchange rates from 2026-03-13. 1.00 USD = 1.00 USD."),
+    ).toBeInTheDocument();
 
-    expect(within(resultCard).getByText("USD")).toBeInTheDocument();
-    expect(within(resultCard).getByText("30.00")).toBeInTheDocument();
+    await user.click(within(dialog).getByRole("combobox"));
+    await user.click(await screen.findByRole("option", { name: /eur - euro/i }));
+
+    await waitFor(() => {
+      expect(within(dialog).getByDisplayValue("EUR 15.00")).toBeInTheDocument();
+      expect(
+        within(dialog).getByText("Exchange rates from 2026-03-13. 1.00 USD = 0.50 EUR."),
+      ).toBeInTheDocument();
+    });
   });
 });
