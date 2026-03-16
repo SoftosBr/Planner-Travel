@@ -69,15 +69,37 @@ export function PlannerResult({
       return exchangeSnapshot.searchedAmount;
     }
 
-    return exchangeSnapshot.searchedAmount === null
-      ? null
-      : exchangeSnapshot.searchedAmount * exchangeSnapshot.rates[selectedCurrency];
+    if (exchangeSnapshot.searchedAmount === null) return null;
+    
+    return exchangeSnapshot.searchedAmount * exchangeSnapshot.rates[selectedCurrency];
   }, [
     exchangeSnapshot.rates,
     exchangeSnapshot.searchedAmount,
     exchangeSnapshot.searchedBase,
     selectedCurrency,
   ]);
+
+  const status = () => {
+    if (exchangeSnapshot.isLoading) return "Refreshing exchange rates in background.";
+
+    if (exchangeSnapshot.searchedDate && selectedExchangeValue !== null) {
+      return (
+        <>
+          <span className="block">Exchange rates from {exchangeSnapshot.searchedDate}.</span>
+          <span className="block">
+            {exchangeSnapshot.searchedAmount?.toFixed(2)} {exchangeSnapshot.searchedBase} ={" "}
+            {selectedExchangeValue.toFixed(2)} {selectedCurrency}.
+          </span>
+        </>
+      );
+    }
+
+    if (exchangeSnapshot.fetchedAt) {
+      return "Exchange rates are ready.";
+    }
+
+    return "Using saved exchange rates until the live refresh finishes.";
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,7 +140,8 @@ export function PlannerResult({
         </div>
 
         <div className="flex flex-col gap-3">
-          {totalsByCurrency.length === 0 ? (
+          {totalsByCurrency.length === 0 ? 
+          (
             <p className="text-sm text-muted-foreground">
               No valid values to calculate yet. Enter a value greater than zero.
             </p>
@@ -136,13 +159,7 @@ export function PlannerResult({
         </div>
 
         <p className="text-sm text-muted-foreground" role="status">
-          {exchangeSnapshot.isLoading
-            ? "Refreshing exchange rates in background."
-            : exchangeSnapshot.searchedDate && selectedExchangeValue !== null
-              ? `Exchange rates from ${exchangeSnapshot.searchedDate}. ${exchangeSnapshot.searchedAmount?.toFixed(2)} ${exchangeSnapshot.searchedBase} = ${selectedExchangeValue.toFixed(2)} ${selectedCurrency}.`
-              : exchangeSnapshot.fetchedAt
-                ? "Exchange rates are ready."
-              : "Using saved exchange rates until the live refresh finishes."}
+          {status()}
         </p>
 
         <DialogFooter showCloseButton />
