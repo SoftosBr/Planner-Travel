@@ -27,6 +27,9 @@ describe("BudgetCard", () => {
 
     expect(screen.getAllByRole("button", { name: /add line below/i })).toHaveLength(1);
     expect(screen.getAllByRole("button", { name: /remove line/i })).toHaveLength(1);
+    expect(screen.getAllByRole("combobox")).toHaveLength(3);
+    expect(screen.getByRole("combobox", { name: /currency/i })).toHaveTextContent(/us dollar/i);
+    expect(screen.getByLabelText(/budget currency for row 2/i)).toHaveDisplayValue(/euro/i);
 
     await user.click(screen.getByRole("button", { name: /add line below/i }));
     expect(onAddBelow).toHaveBeenCalledWith("2");

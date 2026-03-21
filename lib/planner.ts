@@ -12,13 +12,24 @@ export type ExpenseItem = {
 
 export const SHARE_PARAM = "plan";
 
-export function createExpenseItem(id: string): ExpenseItem {
+export function createExpenseItem(id: string, currency: Currency = "USD"): ExpenseItem {
   return {
     id,
     category: "visa",
     value: "",
-    currency: "USD",
+    currency,
   };
+}
+
+export function getBudgetCurrency(expenses: ExpenseItem[]) {
+  return expenses[0]?.currency ?? "USD";
+}
+
+export function syncExpensesCurrency(expenses: ExpenseItem[], currency = getBudgetCurrency(expenses)) {
+  return expenses.map((item) => ({
+    ...item,
+    currency,
+  }));
 }
 
 export function getExpensesFromShareQuery(search: string): ExpenseItem[] | null {
@@ -38,12 +49,12 @@ export function getExpensesFromShareQuery(search: string): ExpenseItem[] | null 
       return null;
     }
 
-    return parsed.map((item, index) => ({
+    return syncExpensesCurrency(parsed.map((item, index) => ({
       id: `shared-${index}`,
       category: item.category,
       value: item.value,
       currency: item.currency,
-    }));
+    })));
   } catch {
     return null;
   }

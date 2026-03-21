@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatAmountInput } from "@/lib/amounts";
+import { getCurrencyLabel } from "@/lib/currencies";
 import type { ExpenseCategory, ExpenseItem } from "@/lib/planner";
 
 type BudgetCardProps = {
@@ -43,10 +44,11 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
       </CardHeader>
       <CardContent className="flex flex-col gap-0">
         {expenses.map((item, index) => {
+          const isFirstRow = index === 0;
           const isLastLine = index === expenses.length - 1;
           const canRemove = expenses.length > 1;
           const rowClassName =
-            index === 0
+            isFirstRow
               ? "grid gap-4 pb-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
               : "grid gap-4 border-t border-border/70 py-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end";
 
@@ -92,13 +94,24 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
               </PlannerFormField>
 
               <PlannerFormField htmlFor={`currency-${item.id}`} label="Currency">
-                <CurrencySelect
-                  id={`currency-${item.id}`}
-                  className="w-full"
-                  data-enter-nav="true"
-                  value={item.currency}
-                  onValueChange={(value) => onUpdateExpense(item.id, { currency: value })}
-                />
+                {isFirstRow ? (
+                  <CurrencySelect
+                    id={`currency-${item.id}`}
+                    className="w-full"
+                    data-enter-nav="true"
+                    value={item.currency}
+                    onValueChange={(value) => onUpdateExpense(item.id, { currency: value })}
+                  />
+                ) : (
+                  <Input
+                    id={`currency-${item.id}`}
+                    readOnly
+                    tabIndex={-1}
+                    value={getCurrencyLabel(item.currency)}
+                    aria-label={`Budget currency for row ${index + 1}`}
+                    className="w-full text-muted-foreground"
+                  />
+                )}
               </PlannerFormField>
 
               <div className="flex items-end">

@@ -10,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { refreshExchangeRatesInBackground } from "@/lib/exchange-rates";
 import {
   createExpenseItem,
+  getBudgetCurrency,
   type ExpenseItem,
   getExpensesFromShareQuery,
   getTotalExpenseItems,
   getTotalsByCurrency,
+  syncExpensesCurrency,
 } from "@/lib/planner";
 
 export default function HomePage() {
@@ -36,9 +38,21 @@ export default function HomePage() {
   const totalItems = useMemo(() => getTotalExpenseItems(expenses), [expenses]);
 
   function updateExpense(id: string, patch: Partial<ExpenseItem>) {
-    setExpenses((current) =>
-      current.map((item) => (item.id === id ? { ...item, ...patch } : item)),
-    );
+    setExpenses((current) => {
+      const index = current.findIndex((item) => item.id === id);
+      if (index < 0) {
+        return current;
+      }
+
+      const nextCurrency =
+        index === 0 && patch.currency ? patch.currency : getBudgetCurrency(current);
+
+      return current.map((item, itemIndex) => ({
+        ...item,
+        ...(itemIndex === index ? patch : {}),
+        currency: nextCurrency,
+      }));
+    });
   }
 
   function addLineBelow(id: string) {
@@ -51,7 +65,7 @@ export default function HomePage() {
       const next = [...current];
       const nextId = `expense-${nextExpenseIdRef.current}`;
       nextExpenseIdRef.current += 1;
-      next.splice(index + 1, 0, createExpenseItem(nextId));
+      next.splice(index + 1, 0, createExpenseItem(nextId, getBudgetCurrency(current)));
       return next;
     });
   }
@@ -61,7 +75,7 @@ export default function HomePage() {
       if (current.length === 1) {
         return current;
       }
-      return current.filter((item) => item.id !== id);
+      return syncExpensesCurrency(current.filter((item) => item.id !== id));
     });
   }
 

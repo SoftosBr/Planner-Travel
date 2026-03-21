@@ -41,29 +41,43 @@ describe("HomePage integration", () => {
 
     const valueInputs = screen.getAllByLabelText(/budgeted value/i);
     expect(valueInputs).toHaveLength(2);
+    expect(screen.getAllByRole("combobox")).toHaveLength(3);
+
+    await user.click(screen.getByRole("combobox", { name: /currency/i }));
+    await user.click(await screen.findByRole("option", { name: /japanese yen/i }));
+
+    expect(screen.getByLabelText(/budget currency for row 2/i)).toHaveDisplayValue(/japanese yen/i);
 
     await user.type(valueInputs[0], "10");
     await user.type(valueInputs[1], "20");
     expect(valueInputs[0]).toHaveDisplayValue("10");
     expect(valueInputs[1]).toHaveDisplayValue("20");
 
+    await user.click(screen.getByRole("button", { name: /add line below/i }));
+    expect(screen.getAllByLabelText(/budgeted value/i)).toHaveLength(3);
+    expect(screen.getByLabelText(/budget currency for row 3/i)).toHaveDisplayValue(/japanese yen/i);
+
+    await user.click(screen.getAllByRole("button", { name: /remove line/i })[0]);
+    expect(screen.getByRole("combobox", { name: /currency/i })).toHaveTextContent(/japanese yen/i);
+    expect(screen.getByLabelText(/budget currency for row 2/i)).toHaveDisplayValue(/japanese yen/i);
+
     await user.click(screen.getByRole("button", { name: /finish planner and calculate/i }));
 
     const dialog = await screen.findByRole("dialog");
-    expect(within(dialog).getByText(/2 expense item\(s\) included/i)).toBeInTheDocument();
-    expect(within(dialog).getByText("$30.00")).toBeInTheDocument();
-    expect(within(dialog).getByText("R$150.00")).toBeInTheDocument();
+    expect(within(dialog).getByText(/1 expense item\(s\) included/i)).toBeInTheDocument();
+    expect(within(dialog).getByText("¥20.00")).toBeInTheDocument();
+    expect(within(dialog).getByText("R$1.00")).toBeInTheDocument();
     expect(within(dialog).getByText("Exchange rates from 2026-03-13")).toBeInTheDocument();
-    expect(within(dialog).getByText("1.00 USD = 5.00 BRL")).toBeInTheDocument();
+    expect(within(dialog).getByText("1.00 JPY = 0.05 BRL")).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole("combobox"));
     await user.click(await screen.findByRole("option", { name: /eur - euro/i }));
 
     await waitFor(() => {
-      expect(within(dialog).getByText("$30.00")).toBeInTheDocument();
-      expect(within(dialog).getByText("€15.00")).toBeInTheDocument();
+      expect(within(dialog).getByText("¥20.00")).toBeInTheDocument();
+      expect(within(dialog).getByText("€0.10")).toBeInTheDocument();
       expect(within(dialog).getByText("Exchange rates from 2026-03-13")).toBeInTheDocument();
-      expect(within(dialog).getByText("1.00 USD = 0.50 EUR")).toBeInTheDocument();
+      expect(within(dialog).getByText("1.00 JPY = 0.01 EUR")).toBeInTheDocument();
     });
   });
 });
