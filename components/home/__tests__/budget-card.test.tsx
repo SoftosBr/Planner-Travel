@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { BudgetCard, type ExpenseItem } from "@/components/home/budget-card";
+import { BudgetCard } from "@/components/home/budget-card";
+import type { ExpenseItem } from "@/lib/planner";
 
 const twoExpenses: ExpenseItem[] = [
   { id: "1", category: "visa", value: "10", currency: "USD" },

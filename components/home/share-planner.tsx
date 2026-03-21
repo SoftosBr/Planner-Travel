@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useSyncExternalStore } from "react";
 import { CheckIcon, CopyIcon } from "lucide-react";
-import type { ExpenseItem } from "@/components/home/budget-card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,8 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-
-const SHARE_PARAM = "plan";
+import { SHARE_PARAM, type ExpenseItem } from "@/lib/planner";
 
 type SharePlannerProps = {
   expenses: ExpenseItem[];

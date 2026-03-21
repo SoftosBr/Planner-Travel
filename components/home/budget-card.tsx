@@ -1,10 +1,11 @@
 "use client";
 
 import { PlusIcon, Trash2Icon } from "lucide-react";
+import { CurrencySelect } from "@/components/home/currency-select";
+import { PlannerFormField } from "@/components/home/planner-form-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,16 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatAmountInput } from "@/lib/amounts";
-import { currencyOptions, type Currency } from "@/lib/currencies";
-
-export type ExpenseCategory = "visa" | "plane-ticket" | "accommodation" | "others";
-
-export type ExpenseItem = {
-  id: string;
-  category: ExpenseCategory;
-  value: string;
-  currency: Currency;
-};
+import type { ExpenseCategory, ExpenseItem } from "@/lib/planner";
 
 type BudgetCardProps = {
   expenses: ExpenseItem[];
@@ -53,18 +45,14 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
         {expenses.map((item, index) => {
           const isLastLine = index === expenses.length - 1;
           const canRemove = expenses.length > 1;
+          const rowClassName =
+            index === 0
+              ? "grid gap-4 pb-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
+              : "grid gap-4 border-t border-border/70 py-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end";
 
           return (
-            <div
-              key={item.id}
-              className={
-                index === 0
-                  ? "grid gap-4 pb-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
-                  : "grid gap-4 border-t border-border/70 py-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end"
-              }
-            >
-              <div className="flex flex-col gap-2">
-                <Label htmlFor={`category-${item.id}`}>Category</Label>
+            <div key={item.id} className={rowClassName}>
+              <PlannerFormField htmlFor={`category-${item.id}`} label="Category">
                 <Select
                   value={item.category}
                   onValueChange={(value) => onUpdateExpense(item.id, { category: value as ExpenseCategory })}
@@ -87,10 +75,9 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-              </div>
+              </PlannerFormField>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor={`value-${item.id}`}>Budgeted value</Label>
+              <PlannerFormField htmlFor={`value-${item.id}`} label="Budgeted value">
                 <Input
                   id={`value-${item.id}`}
                   type="text"
@@ -102,33 +89,17 @@ export function BudgetCard({ expenses, onUpdateExpense, onAddBelow, onRemove }: 
                     onUpdateExpense(item.id, { value: formatAmountInput(event.target.value) })
                   }
                 />
-              </div>
+              </PlannerFormField>
 
-              <div className="flex flex-col gap-2">
-                <Label htmlFor={`currency-${item.id}`}>Currency</Label>
-                <Select
+              <PlannerFormField htmlFor={`currency-${item.id}`} label="Currency">
+                <CurrencySelect
+                  id={`currency-${item.id}`}
+                  className="w-full"
+                  data-enter-nav="true"
                   value={item.currency}
-                  onValueChange={(value) => onUpdateExpense(item.id, { currency: value as Currency })}
-                >
-                  <SelectTrigger
-                    id={`currency-${item.id}`}
-                    className="w-full"
-                    data-enter-nav="true"
-                  >
-                    <SelectValue placeholder="Choose currency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Currencies</SelectLabel>
-                      {currencyOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </div>
+                  onValueChange={(value) => onUpdateExpense(item.id, { currency: value })}
+                />
+              </PlannerFormField>
 
               <div className="flex items-end">
                 {isLastLine ? (

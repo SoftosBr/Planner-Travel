@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MoonStarIcon, SunIcon } from "lucide-react";
 import { useState } from "react";
+import { LayoutContainer } from "@/components/layout/layout-container";
 import { Button } from "@/components/ui/button";
 
 function getPageTitle(pathname: string): string {
@@ -34,7 +35,7 @@ export function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-border/70 bg-background/92 px-4 py-4 backdrop-blur-sm sm:px-6">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
+      <LayoutContainer className="flex items-center justify-between gap-4 px-0 sm:px-0">
         <div className="flex flex-col gap-1">
           <p className="text-xs tracking-[0.14em] text-muted-foreground uppercase">Travel Planner</p>
           <h1 className="text-xl leading-tight font-semibold text-foreground sm:text-2xl [font-family:var(--font-display)]">
@@ -45,7 +46,7 @@ export function TopBar() {
           {isDark ? <SunIcon data-icon="inline-start" /> : <MoonStarIcon data-icon="inline-start" />}
           {isDark ? "Light mode" : "Dark mode"}
         </Button>
-      </div>
+      </LayoutContainer>
     </header>
   );
 }
