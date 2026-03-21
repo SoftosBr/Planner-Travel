@@ -232,7 +232,7 @@ export function PlannerResult({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-6 rounded-[1.5rem] border border-white/18 p-5">
+            <div className="flex flex-col gap-6 rounded-[1.5rem] bg-white/6 border border-white/18 p-5">
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-amber-50/72">≈ Equates to</span>
                 <p className="font-[var(--font-display)] text-3xl tracking-tight text-amber-50 sm:text-4xl">
