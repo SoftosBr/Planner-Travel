@@ -4,5 +4,8 @@ Follow these steps:
 3. Follow next-best-practices for Next.js structure
 4. Create and update unit tests and integration tests
 
+Requirements:
+- Reponsive layout
+- Dark mode
 
 Remember to use/reuse components. 
