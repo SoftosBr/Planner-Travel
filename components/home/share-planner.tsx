@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ExpenseItem } from "@/components/home/budget-card";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -19,13 +19,25 @@ type SharePlannerProps = {
   expenses: ExpenseItem[];
 };
 
+function subscribeToLocation() {
+  return () => {};
+}
+
 export function SharePlanner({ expenses }: SharePlannerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
+  const currentUrl = useSyncExternalStore(
+    subscribeToLocation,
+    () => window.location.href,
+    () => "",
+  );
 
-  useEffect(() => {
-    const url = new URL(window.location.href);
+  const shareUrl = useMemo(() => {
+    if (!currentUrl) {
+      return "";
+    }
+
+    const url = new URL(currentUrl);
     const sharePayload = expenses.map(({ category, value, currency }) => ({
       category,
       value,
@@ -33,8 +45,8 @@ export function SharePlanner({ expenses }: SharePlannerProps) {
     }));
 
     url.searchParams.set(SHARE_PARAM, encodeURIComponent(JSON.stringify(sharePayload)));
-    setShareUrl(url.toString());
-  }, [expenses]);
+    return url.toString();
+  }, [currentUrl, expenses]);
 
   async function copyShareUrl() {
     if (!shareUrl) {
@@ -78,14 +90,17 @@ export function SharePlanner({ expenses }: SharePlannerProps) {
             </DialogDescription>
           </DialogHeader>
 
-          <Input value={shareUrl} readOnly />
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsOpen(false)}>
-              Close
+          <div className="flex items-center gap-2">
+            <Input className="flex-1" value={shareUrl} readOnly />
+            <Button
+              size="icon"
+              variant="outline"
+              aria-label={copied ? "URL copied" : "Copy share URL"}
+              onClick={copyShareUrl}
+            >
+              {copied ? <CheckIcon data-icon="inline-start" /> : <CopyIcon data-icon="inline-start" />}
             </Button>
-            <Button onClick={copyShareUrl}>{copied ? "Copied" : "Copy URL"}</Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>
