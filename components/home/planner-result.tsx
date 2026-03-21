@@ -144,9 +144,9 @@ export function PlannerResult({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="overflow-hidden border border-white/12 bg-[radial-gradient(circle_at_top,rgba(237,181,88,0.16),transparent_36%),linear-gradient(160deg,#141414_0%,#0b0b0d_52%,#050506_100%)] p-0 text-white shadow-2xl ring-1 ring-black/60 sm:max-w-2xl"
+        className="overflow-hidden border border-white/12 p-0 text-white shadow-2xl ring-1 ring-black/60 sm:max-w-2xl"
       >
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,transparent_0%,rgba(255,255,255,0.05)_48%,transparent_100%)] opacity-70" />
+        <div className="absolute inset-0 opacity-70" />
         <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
 
         <div className="relative flex flex-col gap-8 p-6 sm:p-8">
@@ -185,7 +185,7 @@ export function PlannerResult({
               Total spend
             </span>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/6 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-sm sm:p-6">
+            <div className="rounded-[2rem] border border-white/10 bg-white/6 p-5 backdrop-blur-sm sm:p-6">
               <p className="font-[var(--font-display)] text-4xl leading-none tracking-tight text-white sm:text-6xl">
                 {totalSpendLabel}
               </p>
@@ -201,7 +201,7 @@ export function PlannerResult({
             ) : null}
           </section>
 
-          <section className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-black/20 p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-sm sm:p-6">
+          <section className="flex flex-col gap-4 rounded-[2rem] border border-white/10 bg-black/20 p-5 backdrop-blur-sm sm:p-6">
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="planner-total-currency"
@@ -232,7 +232,7 @@ export function PlannerResult({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-6 rounded-[1.5rem] border border-amber-300/18 bg-[linear-gradient(180deg,rgba(237,181,88,0.15),rgba(237,181,88,0.02))] p-5">
+            <div className="flex flex-col gap-6 rounded-[1.5rem] border/18 p-5">
               <div className="flex flex-col gap-2">
                 <span className="text-sm text-amber-50/72">≈ Equates to</span>
                 <p className="font-[var(--font-display)] text-3xl tracking-tight text-amber-50 sm:text-4xl">
