@@ -28,10 +28,14 @@ export function CurrencySelect({
   onValueChange,
   "data-enter-nav": dataEnterNav,
 }: CurrencySelectProps) {
+  const selectedOption = currencyOptions.find((option) => option.value === value);
+
   return (
     <Select value={value} onValueChange={(nextValue) => onValueChange(nextValue as Currency)}>
       <SelectTrigger id={id} className={className} data-enter-nav={dataEnterNav}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder}>
+          {selectedOption?.label}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>

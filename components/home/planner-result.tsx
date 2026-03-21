@@ -140,15 +140,21 @@ export function PlannerResult({
     void refreshExchangeRatesInBackground();
   }, [open]);
 
-  const sourceCurrency = exchangeSnapshot.searchedBase;
+  const sourceCurrency =
+    totalsByCurrency.length === 1 ? totalsByCurrency[0][0] : exchangeSnapshot.searchedBase;
 
   const totalSpend = useMemo(
-    () =>
-      totalsByCurrency.reduce(
+    () => {
+      if (totalsByCurrency.length === 1) {
+        return totalsByCurrency[0][1];
+      }
+
+      return totalsByCurrency.reduce(
         (sum, [currency, total]) =>
           sum + convertCurrencyAmount(total, currency, sourceCurrency, exchangeSnapshot.rates),
         0,
-      ),
+      );
+    },
     [exchangeSnapshot.rates, sourceCurrency, totalsByCurrency],
   );
 
@@ -158,22 +164,10 @@ export function PlannerResult({
     [exchangeSnapshot.rates, selectedCurrency, sourceCurrency, totalSpend],
   );
 
-  const selectedExchangeValue = useMemo(() => {
-    if (selectedCurrency === sourceCurrency) {
-      return exchangeSnapshot.searchedAmount;
-    }
-
-    if (exchangeSnapshot.searchedAmount === null) {
-      return null;
-    }
-
-    return exchangeSnapshot.searchedAmount * exchangeSnapshot.rates[selectedCurrency];
-  }, [
-    exchangeSnapshot.rates,
-    exchangeSnapshot.searchedAmount,
-    selectedCurrency,
-    sourceCurrency,
-  ]);
+  const selectedExchangeValue = useMemo(
+    () => convertCurrencyAmount(1, sourceCurrency, selectedCurrency, exchangeSnapshot.rates),
+    [exchangeSnapshot.rates, selectedCurrency, sourceCurrency],
+  );
 
   const totalSpendLabel = useMemo(
     () => formatCurrency(totalSpend, sourceCurrency),
@@ -186,12 +180,8 @@ export function PlannerResult({
   );
 
   const exchangeRateLabel = useMemo(() => {
-    if (selectedExchangeValue === null) {
-      return null;
-    }
-
-    return `${exchangeSnapshot.searchedAmount?.toFixed(2)} ${sourceCurrency} = ${selectedExchangeValue.toFixed(2)} ${selectedCurrency}`;
-  }, [exchangeSnapshot.searchedAmount, selectedCurrency, selectedExchangeValue, sourceCurrency]);
+    return `1.00 ${sourceCurrency} = ${selectedExchangeValue.toFixed(2)} ${selectedCurrency}`;
+  }, [selectedCurrency, selectedExchangeValue, sourceCurrency]);
 
   const statusLabel = useMemo(() => {
     if (exchangeSnapshot.error) {
