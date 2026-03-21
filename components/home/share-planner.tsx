@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ExpenseItem } from "@/components/home/budget-card";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,12 +22,9 @@ type SharePlannerProps = {
 export function SharePlanner({ expenses }: SharePlannerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState("");
 
-  const shareUrl = useMemo(() => {
-    if (typeof window === "undefined") {
-      return "";
-    }
-
+  useEffect(() => {
     const url = new URL(window.location.href);
     const sharePayload = expenses.map(({ category, value, currency }) => ({
       category,
@@ -36,7 +33,7 @@ export function SharePlanner({ expenses }: SharePlannerProps) {
     }));
 
     url.searchParams.set(SHARE_PARAM, encodeURIComponent(JSON.stringify(sharePayload)));
-    return url.toString();
+    setShareUrl(url.toString());
   }, [expenses]);
 
   async function copyShareUrl() {

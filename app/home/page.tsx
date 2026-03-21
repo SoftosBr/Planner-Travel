@@ -11,21 +11,17 @@ import { refreshExchangeRatesInBackground } from "@/lib/exchange-rates";
 
 const SHARE_PARAM = "plan";
 
-function createExpenseItem(index: number): ExpenseItem {
+function createExpenseItem(id: string): ExpenseItem {
   return {
-    id: `${Date.now()}-${index}`,
+    id,
     category: "visa",
     value: "",
     currency: "USD",
   };
 }
 
-function getExpensesFromShareQuery(): ExpenseItem[] | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const rawValue = new URLSearchParams(window.location.search).get(SHARE_PARAM);
+function getExpensesFromShareQuery(search: string): ExpenseItem[] | null {
+  const rawValue = new URLSearchParams(search).get(SHARE_PARAM);
   if (!rawValue) {
     return null;
   }
@@ -42,7 +38,7 @@ function getExpensesFromShareQuery(): ExpenseItem[] | null {
     }
 
     return parsed.map((item, index) => ({
-      id: `${Date.now()}-${index}`,
+      id: `shared-${index}`,
       category: item.category,
       value: item.value,
       currency: item.currency,
@@ -54,13 +50,24 @@ function getExpensesFromShareQuery(): ExpenseItem[] | null {
 
 export default function HomePage() {
   const plannerRef = useRef<HTMLElement | null>(null);
-  const [expenses, setExpenses] = useState<ExpenseItem[]>(
-    () => getExpensesFromShareQuery() ?? [createExpenseItem(0)],
-  );
+  const nextExpenseIdRef = useRef(1);
+  const [expenses, setExpenses] = useState<ExpenseItem[]>(() => [createExpenseItem("expense-0")]);
   const [isResultOpen, setIsResultOpen] = useState(false);
 
   useEffect(() => {
     void refreshExchangeRatesInBackground();
+  }, []);
+
+  useEffect(() => {
+    const sharedExpenses = getExpensesFromShareQuery(window.location.search);
+
+    if (sharedExpenses) {
+      nextExpenseIdRef.current = sharedExpenses.length;
+      setExpenses(sharedExpenses);
+      return;
+    }
+
+    nextExpenseIdRef.current = 1;
   }, []);
 
   const totalsByCurrency = useMemo(() => {
@@ -96,7 +103,9 @@ export default function HomePage() {
       }
 
       const next = [...current];
-      next.splice(index + 1, 0, createExpenseItem(current.length));
+      const nextId = `expense-${nextExpenseIdRef.current}`;
+      nextExpenseIdRef.current += 1;
+      next.splice(index + 1, 0, createExpenseItem(nextId));
       return next;
     });
   }
