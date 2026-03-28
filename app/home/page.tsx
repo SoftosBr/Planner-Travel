@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { BudgetCard } from "@/components/home/budget-card";
 import { PlannerResult } from "@/components/home/planner-result";
@@ -18,7 +18,7 @@ import {
   syncExpensesCurrency,
 } from "@/lib/planner";
 
-export default function HomePage() {
+function Home(){
   const searchParams = useSearchParams();
   const plannerRef = useRef<HTMLElement | null>(null);
   const initialExpenses = useMemo(
@@ -159,4 +159,12 @@ export default function HomePage() {
       </LayoutContainer>
     </main>
   );
+}
+
+export default function HomePage() {
+  return(
+    <Suspense>
+      <Home/>
+    </Suspense>
+  )
 }
